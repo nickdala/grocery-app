@@ -9,12 +9,23 @@ param location string
 @description('Name of the the environment which is used to generate a short unique hash used in all resources.')
 param environmentName string
 
-param containerAppsEnvironmentName string = ''
-param containerRegistryName string = ''
+// Resource Group
 param resourceGroupName string = ''
+
+// App Insights
 param logAnalyticsName string = ''
 param applicationInsightsDashboardName string = ''
 param applicationInsightsName string = ''
+
+// ACA
+param containerAppsEnvironmentName string = ''
+param containerRegistryName string = ''
+
+// Apps
+param webContainerAppName string = ''
+
+@description('The image name for the web service')
+param webImageName string = ''
 
 var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
@@ -55,7 +66,26 @@ module containerApps './core/host/container-apps.bicep' = {
   }
 }
 
+// Web backend
+module web './app/web.bicep' = {
+  name: 'web'
+  scope: rg
+  params: {
+    name: !empty(webContainerAppName) ? webContainerAppName : '${abbrs.appContainerApps}web-${resourceToken}'
+    location: location
+    imageName: webImageName
+    applicationInsightsName: monitoring.outputs.applicationInsightsName
+    containerAppsEnvironmentName: containerApps.outputs.environmentName
+    containerRegistryName: containerApps.outputs.registryName
+  }
+}
+
+output APPLICATIONINSIGHTS_CONNECTION_STRING string = monitoring.outputs.applicationInsightsConnectionString
+output APPLICATIONINSIGHTS_NAME string = monitoring.outputs.applicationInsightsName
+
 output AZURE_CONTAINER_ENVIRONMENT_NAME string = containerApps.outputs.environmentName
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerApps.outputs.registryLoginServer
 output AZURE_CONTAINER_REGISTRY_NAME string = containerApps.outputs.registryName
 output AZURE_LOCATION string = location
+
+output SERVICE_WEB_NAME string = web.outputs.SERVICE_WEB_NAME

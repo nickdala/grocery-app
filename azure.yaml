@@ -3,3 +3,9 @@
 name: hilla-grocery-app
 metadata:
   template: hilla-grocery-app@0.0.1-beta
+services:
+  web:
+    project: ./src/web/hilla-grocery-app
+    module: app/web
+    language: java
+    host: containerapp

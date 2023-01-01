@@ -1,7 +1,6 @@
 FROM mcr.microsoft.com/openjdk/jdk:17-mariner AS build
 
 WORKDIR /workspace/app
-EXPOSE 8080
 
 COPY mvnw .
 COPY .mvn .mvn
