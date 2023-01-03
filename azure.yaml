@@ -9,3 +9,8 @@ services:
     module: app/web
     language: java
     host: containerapp
+  backend:
+    project: ./src/backend/groceryservice
+    module: app/backend
+    language: java
+    host: containerapp

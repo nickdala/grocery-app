@@ -23,9 +23,13 @@ param containerRegistryName string = ''
 
 // Apps
 param webContainerAppName string = ''
+param backendContainerAppName string = ''
 
 @description('The image name for the web service')
 param webImageName string = ''
+
+@description('The image name for the backend service')
+param backendImageName string = ''
 
 var abbrs = loadJsonContent('./abbreviations.json')
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
@@ -66,7 +70,7 @@ module containerApps './core/host/container-apps.bicep' = {
   }
 }
 
-// Web backend
+// Apps
 module web './app/web.bicep' = {
   name: 'web'
   scope: rg
@@ -74,6 +78,19 @@ module web './app/web.bicep' = {
     name: !empty(webContainerAppName) ? webContainerAppName : '${abbrs.appContainerApps}web-${resourceToken}'
     location: location
     imageName: webImageName
+    applicationInsightsName: monitoring.outputs.applicationInsightsName
+    containerAppsEnvironmentName: containerApps.outputs.environmentName
+    containerRegistryName: containerApps.outputs.registryName
+  }
+}
+
+module backend './app/backend.bicep' = {
+  name: 'backend'
+  scope: rg
+  params: {
+    name: !empty(backendContainerAppName) ? backendContainerAppName : '${abbrs.appContainerApps}backend-${resourceToken}'
+    location: location
+    imageName: backendImageName
     applicationInsightsName: monitoring.outputs.applicationInsightsName
     containerAppsEnvironmentName: containerApps.outputs.environmentName
     containerRegistryName: containerApps.outputs.registryName
@@ -89,3 +106,4 @@ output AZURE_CONTAINER_REGISTRY_NAME string = containerApps.outputs.registryName
 output AZURE_LOCATION string = location
 
 output SERVICE_WEB_NAME string = web.outputs.SERVICE_WEB_NAME
+output SERVICE_BACKEND_NAME string = backend.outputs.SERVICE_BACKEND_NAME

@@ -11,6 +11,8 @@ param imageName string
 param keyVaultName string = ''
 param managedIdentity bool = !empty(keyVaultName)
 param targetPort int = 80
+param daprappId string
+param daprappPort int
 
 @description('CPU cores allocated to a single container instance, e.g. 0.5')
 param containerCpuCoreCount string = '0.5'
@@ -32,6 +34,12 @@ resource app 'Microsoft.App/containerApps@2022-03-01' = {
         targetPort: targetPort
         transport: 'auto'
       }
+      //dapr: {
+      //  enabled: true
+        //appId: daprappId
+      //  appProtocol: 'http'
+      //  appPort: daprappPort
+      //}
       secrets: [
         {
           name: 'registry-password'
